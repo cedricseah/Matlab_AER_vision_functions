@@ -1153,9 +1153,18 @@ classdef base_events < handle
             %
             writeEvents.x = double(evt.x-1);
             writeEvents.y = double(evt.y-1);
-            writeEvents.type = zeros(1,length(evt.ts));
-            writeEvents.subtype = evt.p-1;
-            writeEvents.ts = evt.ts;
+            writeEvents.ts = ceil(evt.ts);
+            if any(strcmp('type', fieldnames(evt)))
+                writeEvents.type = evt.type;
+            else
+                writeEvents.type = zeros(1,length(evt.ts));
+            end
+            
+            if any(strcmp('subtype', fieldnames(evt)))
+                writeEvents.subtype = evt.subtype;
+            else
+                writeEvents.subtype = evt.p-1;
+            end
             
             %             writeEvents = CombineStreams(writeEvents, overflowEvents);
             writeEvents.ts = ceil(writeEvents.ts);
@@ -1164,6 +1173,7 @@ classdef base_events < handle
             %                 disp('error in calculating the number of overflow events')
             %             end
             numEventsRemaining = length(writeEvents.ts);
+            packetType = 1; %% TD_EM_Format
             %write_events.ts = rem(write_events.ts, 2^16);
             
             eventIdx = 1;
@@ -1177,19 +1187,11 @@ classdef base_events < handle
                 %                 num_events = min(eventsPerPacket, numEventsRemaining);
                 fwrite(outputFile, num_events, 'uint32');
                 fwrite(outputFile, startTime, 'uint32');
-                fwrite(outputFile, endTime, 'uint32');
+                %fwrite(outputFile, endTime, 'uint32');
+                fwrite(outputFile, packetType, 'uint16');
+                fwrite(outputFile, bitand(endTime, 2^16-1), 'uint16');
                 
                 writeEvents.ts(eventIdx:endIdx) = writeEvents.ts(eventIdx:endIdx) - startTimeUs;
-                
-                
-                %                 fwrite(outputFile, floor(writeEvents.ts(eventIdx)/2^16)*2^16, 'uint32');
-                %                 %    fwrite(output_file, end_time, 'uint32');
-                %                 fwrite(outputFile, floor(writeEvents.ts(eventIdx+num_events-1)/2^16)*2^16, 'uint32');
-                %                 %fwrite(outputFile, writeEvents.ts(eventIdx), 'uint32');
-                %                 %fwrite(outputFile, writeEvents.ts(eventIdx+num_events-1), 'uint32');
-                %                 fwrite(outputFile, floor(writeEvents.ts(eventIdx)/2^16)*2^16, 'uint32');
-                %                 %    fwrite(output_file, end_time, 'uint32');
-                %                 fwrite(outputFile, floor(writeEvents.ts(eventIdx+num_events-1)/2^16)*2^16, 'uint32');
                 
                 %num_events = bitshift(raw_data_buffer(buffer_location+3), 24) + bitshift(raw_data_buffer(buffer_location+2), 16) + bitshift(raw_data_buffer(buffer_location+1), 8) + raw_data_buffer(buffer_location);
                 buffer = zeros(1, 8*num_events);
