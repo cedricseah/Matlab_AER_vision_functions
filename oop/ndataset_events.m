@@ -39,6 +39,13 @@ classdef ndataset_events < base_events
             td.ts   = td.ts + bitshift(evtStream(4:5:end), 8);
             td.ts   = td.ts + evtStream(5:5:end);
             td.actualSize = numel(td.x);
+            
+            if ~issorted(td.ts)
+                [td.ts, sortOrder] = sort(td.ts);
+                td.x = td.x(sortOrder);
+                td.y = td.y(sortOrder);
+                td.p = td.p(sortOrder);
+            end
         end
         
         function stabilize(td)

@@ -303,11 +303,11 @@ classdef base_events < handle
         
         function preallocate(evt, numberToAdd)
             %pre-allocate additional space for new data
-            newSpace = zeros(1, numberToAdd);
-            evt.x = [evt.x newSpace];
-            evt.y = [evt.y newSpace];
-            evt.p = [evt.p newSpace];
-            evt.ts = [evt.ts newSpace];
+            newSpace = zeros(numberToAdd, 1);
+            evt.x = [evt.x; newSpace];
+            evt.y = [evt.y; newSpace];
+            evt.p = [evt.p; newSpace];
+            evt.ts = [evt.ts; newSpace];
         end
         
         function trim(evt)
@@ -321,7 +321,8 @@ classdef base_events < handle
         end
         
         function concatenate(evt, eventsToAdd)
-            % Concatenate eventsToAdd to this base_events instance
+            % Concatenate eventsToAdd to this base_events instance without
+            % modifying or sorting timestamps
             % eventsToAdd is also an instance of base_events
             newEventsSize = numel(eventsToAdd.x);
             if (evt.actualSize + newEventsSize) > numel(evt.x)
